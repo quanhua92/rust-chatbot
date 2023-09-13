@@ -10,7 +10,10 @@ leptos.workspace = true
 leptos_meta.workspace = true
 leptos_router.workspace = true
 leptos_axum = { workspace = true, optional = true }
+axum = { workspace = true, optional = true }
 serde = { version = "1.0.188", features = ["derive"] }
+llm = { git = "https://github.com/rustformers/llm" , branch = "main", optional = true}
+rand = "0.8.5"
 
 http.workspace = true
 cfg-if.workspace = true
@@ -19,5 +22,5 @@ thiserror.workspace = true
 [features]
 default = []
 hydrate = ["leptos/hydrate", "leptos_meta/hydrate", "leptos_router/hydrate"]
-ssr = ["leptos/ssr", "leptos_meta/ssr", "leptos_router/ssr", "dep:leptos_axum"]
+ssr = ["leptos/ssr", "leptos_meta/ssr", "leptos_router/ssr", "dep:leptos_axum", "dep:llm", "dep:axum"]
 

@@ -6,6 +6,7 @@ pub mod api;
 pub mod components;
 pub mod error_template;
 pub mod models;
+pub mod state;
 
 use crate::api::process_conversation;
 use crate::components::{ConversationArea, InputArea};
@@ -51,7 +52,7 @@ fn HomePage(cx: Scope) -> impl IntoView {
             c.messages.push(message);
         });
 
-        process_conversation(conversation.get())
+        process_conversation(cx, conversation.get())
     });
 
     create_effect(cx, move |_| {

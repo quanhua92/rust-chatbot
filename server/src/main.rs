@@ -1,12 +1,38 @@
+use app::state::AppState;
 use app::*;
+use axum::{
+    body::Body as AxumBody,
+    extract::{Path, RawQuery, State},
+    http::{header::HeaderMap, Request},
+    response::{IntoResponse, Response},
+};
 use axum::{routing::post, Router};
 use dotenv;
 use fileserv::file_and_error_handler;
 use leptos::*;
-use leptos_axum::{generate_route_list, LeptosRoutes};
+use leptos_axum::{generate_route_list, handle_server_fns_with_context, LeptosRoutes};
 use std::env;
 
 pub mod fileserv;
+
+async fn handle_server_fns_with_state(
+    State(state): State<AppState>,
+    path: Path<String>,
+    headers: HeaderMap,
+    raw_query: RawQuery,
+    request: Request<AxumBody>,
+) -> impl IntoResponse {
+    handle_server_fns_with_context(
+        path,
+        headers,
+        raw_query,
+        move |cx| {
+            provide_context(cx, state.clone());
+        },
+        request,
+    )
+    .await
+}
 
 #[tokio::main]
 async fn main() {
@@ -26,12 +52,14 @@ async fn main() {
     let addr = leptos_options.site_addr;
     let routes = generate_route_list(|cx| view! { cx, <App/> }).await;
 
+    let state = AppState { leptos_options };
+
     // build our application with a route
     let app = Router::new()
-        .route("/api/*fn_name", post(leptos_axum::handle_server_fns))
-        .leptos_routes(&leptos_options, routes, |cx| view! { cx, <App/> })
+        .route("/api/*fn_name", post(handle_server_fns_with_state))
+        .leptos_routes(&state, routes, |cx| view! { cx, <App/> })
         .fallback(file_and_error_handler)
-        .with_state(leptos_options);
+        .with_state(state);
 
     // run our app with hyper
     // `axum::Server` is a re-export of `hyper::Server`
