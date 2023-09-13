@@ -1,14 +1,20 @@
 use app::*;
 use axum::{routing::post, Router};
+use dotenv;
 use fileserv::file_and_error_handler;
 use leptos::*;
 use leptos_axum::{generate_route_list, LeptosRoutes};
+use std::env;
 
 pub mod fileserv;
 
 #[tokio::main]
 async fn main() {
     simple_logger::init_with_level(log::Level::Debug).expect("couldn't initialize logging");
+
+    dotenv::dotenv().ok();
+    let model_path = env::var("MODEL_PATH").expect("MODEL_PATH must be set");
+    dbg!(model_path);
 
     // Setting get_configuration(None) means we'll be using cargo-leptos's env values
     // For deployment these variables are:

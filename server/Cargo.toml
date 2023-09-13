@@ -8,6 +8,8 @@ edition = "2021"
 [dependencies]
 app = { path = "../app", default-features = false, features = ["ssr"] }
 leptos = { workspace = true, features = [ "ssr" ]}
+dotenv = { version = "0.15.0" }
+
 leptos_axum.workspace = true
 
 axum.workspace = true
