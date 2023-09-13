@@ -5,11 +5,12 @@ use leptos::*;
 pub fn ConversationArea(cx: Scope, conversation: ReadSignal<Conversation>) -> impl IntoView {
     view! {
         cx,
-        <div>
+        <div class="conversation-area">
             { move || conversation.get().messages.iter().map(move |message| {
                 view! { cx,
-                    <div>
-                        {message.sender.clone()}: {message.text.clone()}
+                    <div class="message">
+                        <span class="message-sender">{message.sender.clone()}</span>
+                        <p class="message-text">{message.text.clone()}</p>
                     </div>
                 }
             })

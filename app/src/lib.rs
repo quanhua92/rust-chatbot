@@ -22,7 +22,7 @@ pub fn App(cx: Scope) -> impl IntoView {
         <Stylesheet id="leptos" href="/pkg/start-axum-workspace.css"/>
 
         // sets the document title
-        <Title text="Welcome to Leptos"/>
+        <Title text="Welcome to Rust Chatbot"/>
 
         // content for this welcome page
         <Router>
@@ -42,7 +42,7 @@ fn HomePage(cx: Scope) -> impl IntoView {
     let (conversation, set_conversation) = create_signal(cx, Conversation::new());
 
     view! { cx,
-        <div>
+        <div class="chat-area">
             <ConversationArea conversation />
             <InputArea />
         </div>

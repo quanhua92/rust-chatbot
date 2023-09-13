@@ -17,11 +17,11 @@ impl Conversation {
         let messages = vec![
             Message {
                 text: "Hello from bot".to_string(),
-                sender: "bot".to_string(),
+                sender: "AI".to_string(),
             },
             Message {
                 text: "Hello from user".to_string(),
-                sender: "user".to_string(),
+                sender: "User".to_string(),
             },
         ];
         Self {
