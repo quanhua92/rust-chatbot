@@ -2,12 +2,14 @@ use leptos::*;
 use leptos_meta::*;
 use leptos_router::*;
 
+pub mod api;
 pub mod components;
 pub mod error_template;
 pub mod models;
 
+use crate::api::process_conversation;
 use crate::components::{ConversationArea, InputArea};
-use crate::models::Conversation;
+use crate::models::{Conversation, Message};
 
 #[component]
 pub fn App(cx: Scope) -> impl IntoView {
@@ -40,11 +42,39 @@ pub fn App(cx: Scope) -> impl IntoView {
 fn HomePage(cx: Scope) -> impl IntoView {
     // Creates a reactive value to update the button
     let (conversation, set_conversation) = create_signal(cx, Conversation::new());
+    let send_message = create_action(cx, move |input: &String| {
+        let message = Message {
+            text: input.clone(),
+            sender: "User".to_string(),
+        };
+        set_conversation.update(move |c| {
+            c.messages.push(message);
+        });
+
+        process_conversation(conversation.get())
+    });
+
+    create_effect(cx, move |_| {
+        if let Some(_) = send_message.input().get() {
+            set_conversation.update(move |c| {
+                c.messages.push(Message {
+                    text: "...".to_string(),
+                    sender: "AI".to_string(),
+                });
+            });
+        }
+    });
+
+    create_effect(cx, move |_| {
+        if let Some(Ok(response)) = send_message.value().get() {
+            set_conversation.set(response);
+        }
+    });
 
     view! { cx,
         <div class="chat-area">
             <ConversationArea conversation />
-            <InputArea />
+            <InputArea submit=send_message />
         </div>
     }
 }
