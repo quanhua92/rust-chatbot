@@ -4,14 +4,14 @@ use axum::{
     body::Body as AxumBody,
     extract::{Path, RawQuery, State},
     http::{header::HeaderMap, Request},
-    response::{IntoResponse, Response},
+    response::IntoResponse,
 };
 use axum::{routing::post, Router};
 use dotenv;
 use fileserv::file_and_error_handler;
 use leptos::*;
 use leptos_axum::{generate_route_list, handle_server_fns_with_context, LeptosRoutes};
-use std::env;
+use std::{env, sync::Arc};
 
 pub mod fileserv;
 
@@ -39,8 +39,6 @@ async fn main() {
     simple_logger::init_with_level(log::Level::Debug).expect("couldn't initialize logging");
 
     dotenv::dotenv().ok();
-    let model_path = env::var("MODEL_PATH").expect("MODEL_PATH must be set");
-    dbg!(model_path);
 
     // Setting get_configuration(None) means we'll be using cargo-leptos's env values
     // For deployment these variables are:
@@ -52,7 +50,21 @@ async fn main() {
     let addr = leptos_options.site_addr;
     let routes = generate_route_list(|cx| view! { cx, <App/> }).await;
 
-    let state = AppState { leptos_options };
+    // Load model
+    let model_path = env::var("MODEL_PATH").expect("MODEL_PATH must be set");
+    let model = llm::load::<llm::models::Llama>(
+        std::path::Path::new(&model_path),
+        llm::TokenizerSource::Embedded, // TODO: use HF tokenizers
+        Default::default(),
+        llm::load_progress_callback_stdout,
+    )
+    .unwrap_or_else(|err| panic!("Failed to load model: {err}"));
+
+    let state = AppState {
+        leptos_options,
+        model: Arc::new(model),
+        model_path,
+    };
 
     // build our application with a route
     let app = Router::new()
