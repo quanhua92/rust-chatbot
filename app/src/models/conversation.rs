@@ -14,18 +14,12 @@ pub struct Conversation {
 
 impl Conversation {
     pub fn new() -> Self {
-        let messages = vec![
-            Message {
-                text: "Hello from bot".to_string(),
-                sender: "AI".to_string(),
-            },
-            Message {
-                text: "Hello from user".to_string(),
-                sender: "User".to_string(),
-            },
-        ];
+        // let messages = vec![Message {
+        //     text: "How may I help you?".to_string(),
+        //     sender: "AI".to_string(),
+        // }];
         Self {
-            messages, // messages: Vec::new(),
+            messages: Vec::new(),
         }
     }
 }
