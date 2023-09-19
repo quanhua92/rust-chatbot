@@ -27,7 +27,10 @@ pub async fn process_conversation(
 
     let mut output: String = String::new();
     let mut buffer: String = String::new();
-    let mut session = model.start_session(llm::InferenceSessionConfig {n_threads: 3, ..Default::default()});
+    let mut session = model.start_session(llm::InferenceSessionConfig {
+        n_threads: num_cpus::get_physical(),
+        ..Default::default()
+    });
     log!("Generating response...");
     log!("Prompt: {}", prompt);
     let res = session.infer::<std::convert::Infallible>(
