@@ -52,10 +52,15 @@ async fn main() {
 
     // Load model
     let model_path = env::var("MODEL_PATH").expect("MODEL_PATH must be set");
+    let model_parameters = llm::ModelParameters {
+        use_gpu: true,
+        ..llm::ModelParameters::default()
+    };
+    log!("{:?}", model_parameters);
     let model = llm::load::<llm::models::Llama>(
         std::path::Path::new(&model_path),
-        llm::TokenizerSource::Embedded, // TODO: use HF tokenizers
-        Default::default(),
+        llm::TokenizerSource::Embedded,
+        model_parameters,
         llm::load_progress_callback_stdout,
     )
     .unwrap_or_else(|err| panic!("Failed to load model: {err}"));
