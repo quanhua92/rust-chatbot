@@ -1,3 +1,4 @@
+use rand::{distributions::Alphanumeric, Rng};
 use serde::Deserialize;
 use serde::Serialize;
 
@@ -9,16 +10,18 @@ pub struct Message {
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Conversation {
+    pub id: String,
     pub messages: Vec<Message>,
 }
 
 impl Conversation {
     pub fn new() -> Self {
-        // let messages = vec![Message {
-        //     text: "How may I help you?".to_string(),
-        //     sender: "AI".to_string(),
-        // }];
         Self {
+            id: rand::thread_rng()
+                .sample_iter(&Alphanumeric)
+                .take(6)
+                .map(char::from)
+                .collect(),
             messages: Vec::new(),
         }
     }
