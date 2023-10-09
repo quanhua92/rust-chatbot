@@ -1,4 +1,50 @@
 body {
-	font-family: sans-serif;
-	text-align: center;
+    font-family: sans-serif;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+}
+
+.chat-area {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    justify-content: space-between;
+}
+
+.conversation-area {
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    padding: 0.25rem;
+}
+
+.conversation-area>.message {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-bottom: 1px solid hsl(0, 0, 0%, 10%);
+}
+
+.conversation-area>.message>.message-sender {
+    min-width: 40px;
+    height: 40px;
+    border-radius: 20px;
+    background-color: hsl(0, 0, 0%, 10%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7em;
+}
+
+.input-area {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.25rem;
+}
+
+.input-area-text {
+    flex-grow: 1;
+    min-height: 2em;
 }

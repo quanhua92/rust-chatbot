@@ -2,7 +2,14 @@ use leptos::*;
 use leptos_meta::*;
 use leptos_router::*;
 
+pub mod api;
+pub mod components;
 pub mod error_template;
+pub mod models;
+
+use crate::api::process_conversation;
+use crate::components::{ConversationArea, InputArea};
+use crate::models::{Conversation, Message};
 
 #[component]
 pub fn App() -> impl IntoView {
@@ -10,20 +17,18 @@ pub fn App() -> impl IntoView {
     provide_meta_context();
 
     view! {
-
-
         // injects a stylesheet into the document <head>
         // id=leptos means cargo-leptos will hot-reload this stylesheet
         <Stylesheet id="leptos" href="/pkg/start-axum-workspace.css"/>
 
         // sets the document title
-        <Title text="Welcome to Leptos"/>
+        <Title text="Welcome to Rust Chatbot"/>
 
         // content for this welcome page
         <Router>
             <main>
                 <Routes>
-                    <Route path="" view=HomePage/>
+                    <Route path="" view=|| view! { <HomePage/> }/>
                 </Routes>
             </main>
         </Router>
@@ -34,11 +39,40 @@ pub fn App() -> impl IntoView {
 #[component]
 fn HomePage() -> impl IntoView {
     // Creates a reactive value to update the button
-    let (count, set_count) = create_signal(0);
-    let on_click = move |_| set_count.update(|count| *count += 1);
+    let (conversation, set_conversation) = create_signal(Conversation::new());
+    let send_message = create_action(move |input: &String| {
+        let message = Message {
+            text: input.clone(),
+            sender: "User".to_string(),
+        };
+        set_conversation.update(move |c| {
+            c.messages.push(message);
+        });
+
+        process_conversation(conversation.get())
+    });
+
+    create_effect(move |_| {
+        if let Some(_) = send_message.input().get() {
+            set_conversation.update(move |c| {
+                c.messages.push(Message {
+                    text: "...".to_string(),
+                    sender: "AI".to_string(),
+                });
+            });
+        }
+    });
+
+    create_effect(move |_| {
+        if let Some(Ok(response)) = send_message.value().get() {
+            set_conversation.set(response);
+        }
+    });
 
     view! {
-        <h1>"Welcome to Leptos!"</h1>
-        <button on:click=on_click>"Click Me: " {count}</button>
+        <div class="chat-area">
+            <ConversationArea conversation />
+            <InputArea submit=send_message />
+        </div>
     }
 }

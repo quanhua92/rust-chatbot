@@ -85,6 +85,7 @@ dependencies = [
  "leptos_axum",
  "leptos_meta",
  "leptos_router",
+ "serde",
  "thiserror",
 ]
 
