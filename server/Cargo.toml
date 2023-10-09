@@ -8,6 +8,9 @@ edition = "2021"
 [dependencies]
 app = { path = "../app", default-features = false, features = ["ssr"] }
 leptos = { workspace = true, features = [ "ssr" ]}
+dotenv = { version = "0.15.0" }
+llm = { git = "https://github.com/rustformers/llm" , branch = "main", default-features = false, features = ["models"]}
+
 leptos_axum.workspace = true
 
 axum.workspace = true
@@ -16,3 +19,6 @@ tokio.workspace = true
 tower.workspace = true
 tower-http.workspace = true
 log.workspace = true
+
+[features]
+clblast = ["llm/clblast"]

@@ -1,14 +1,45 @@
+use app::state::AppState;
 use app::*;
+use axum::{
+    body::Body as AxumBody,
+    extract::{Path, RawQuery, State},
+    http::{header::HeaderMap, Request},
+    response::IntoResponse,
+};
 use axum::{routing::post, Router};
+use dotenv;
 use fileserv::file_and_error_handler;
+use leptos::logging::log;
 use leptos::*;
-use leptos_axum::{generate_route_list, LeptosRoutes};
+use leptos_axum::{generate_route_list, handle_server_fns_with_context, LeptosRoutes};
+use std::{env, sync::Arc};
 
 pub mod fileserv;
+
+async fn handle_server_fns_with_state(
+    State(state): State<AppState>,
+    path: Path<String>,
+    headers: HeaderMap,
+    raw_query: RawQuery,
+    request: Request<AxumBody>,
+) -> impl IntoResponse {
+    handle_server_fns_with_context(
+        path,
+        headers,
+        raw_query,
+        move || {
+            provide_context(state.clone());
+        },
+        request,
+    )
+    .await
+}
 
 #[tokio::main]
 async fn main() {
     simple_logger::init_with_level(log::Level::Debug).expect("couldn't initialize logging");
+
+    dotenv::dotenv().ok();
 
     // Setting get_configuration(None) means we'll be using cargo-leptos's env values
     // For deployment these variables are:
@@ -18,18 +49,39 @@ async fn main() {
     let conf = get_configuration(None).await.unwrap();
     let leptos_options = conf.leptos_options;
     let addr = leptos_options.site_addr;
-    let routes = generate_route_list(App);
+    let routes = generate_route_list(|| view! { <App/> });
+
+    // Load model
+    let model_path = env::var("MODEL_PATH").expect("MODEL_PATH must be set");
+    let model_parameters = llm::ModelParameters {
+        use_gpu: true,
+        ..llm::ModelParameters::default()
+    };
+
+    let model = llm::load::<llm::models::Llama>(
+        std::path::Path::new(&model_path),
+        llm::TokenizerSource::Embedded,
+        model_parameters,
+        llm::load_progress_callback_stdout,
+    )
+    .unwrap_or_else(|err| panic!("Failed to load model: {err}"));
+
+    let state = AppState {
+        leptos_options,
+        model: Arc::new(model),
+        model_path,
+    };
 
     // build our application with a route
     let app = Router::new()
-        .route("/api/*fn_name", post(leptos_axum::handle_server_fns))
-        .leptos_routes(&leptos_options, routes, App)
+        .route("/api/*fn_name", post(handle_server_fns_with_state))
+        .leptos_routes(&state, routes, || view! { <App/> })
         .fallback(file_and_error_handler)
-        .with_state(leptos_options);
+        .with_state(state);
 
     // run our app with hyper
     // `axum::Server` is a re-export of `hyper::Server`
-    log::info!("listening on http://{}", &addr);
+    log!("listening on http://{}", &addr);
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
         .await
