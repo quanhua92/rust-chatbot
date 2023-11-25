@@ -1,23 +1,22 @@
 FROM rustlang/rust:nightly-bullseye as builder
 
+# Add GPU support
+RUN apt-get update && apt-get install -y libclblast-dev
+
 RUN wget https://github.com/cargo-bins/cargo-binstall/releases/latest/download/cargo-binstall-x86_64-unknown-linux-musl.tgz
 
 RUN tar -xvf cargo-binstall-x86_64-unknown-linux-musl.tgz
 
 RUN cp cargo-binstall /usr/local/cargo/bin
 
-RUN cargo binstall cargo-leptos --version 0.2.0 -y
-
-# Add the WASM target
-RUN rustup target add wasm32-unknown-unknown
-
-# Add GPU support
-RUN apt-get update && apt-get install -y libclblast-dev
+RUN cargo binstall cargo-leptos --version 0.2.4 -y
+# RUN cargo install -f wasm-bindgen-cli --version 0.2.89
 
 RUN mkdir -p /app
 WORKDIR /app
 COPY . .
 
+RUN rustup target add wasm32-unknown-unknown
 RUN cargo leptos build --release --bin-features clblast -vv
 
 FROM rustlang/rust:nightly-bullseye as runner

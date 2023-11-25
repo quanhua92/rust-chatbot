@@ -3,7 +3,7 @@ use crate::models::Message;
 use leptos::logging::log;
 use leptos::*;
 
-#[server(ProcessConversation "/api")]
+#[server(ProcessConversation, "/api")]
 pub async fn process_conversation(
     conversation: Conversation,
 ) -> Result<Conversation, ServerFnError> {
